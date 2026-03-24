@@ -1,0 +1,85 @@
+﻿---
+import Comments from "@/components/Comments.astro";
+import { collectionMeta } from "@/config/site";
+import type { BlogCollection } from "@/utils/content";
+import { formatDateLong } from "@/utils/date";
+
+interface NeighborPost {
+  title: string;
+  permalink: string;
+}
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  collection: BlogCollection;
+  title: string;
+  description: string;
+  date: Date;
+  updated?: Date;
+  headings: Heading[];
+  prev: NeighborPost | null;
+  next: NeighborPost | null;
+}
+
+const { collection, title, description, date, updated, headings, prev, next } = Astro.props;
+---
+
+<article class="article-wrapper">
+  <header class="card article-header">
+    <p class="article-kicker">{collectionMeta[collection].label}</p>
+    <h1>{title}</h1>
+    <p class="article-description">{description}</p>
+    <div class="article-meta">
+      <time datetime={date.toISOString()}>{formatDateLong(date)}</time>
+      {
+        updated ? (
+          <span>更新于 {formatDateLong(updated)}</span>
+        ) : null
+      }
+    </div>
+  </header>
+
+  <div class="article-grid">
+    <section class="card prose article-content">
+      <slot />
+    </section>
+    <aside class="card toc-card">
+      <h2>目录</h2>
+      <ul>
+        {headings
+          .filter((item) => item.depth === 2 || item.depth === 3)
+          .map((item) => (
+            <li class={`depth-${item.depth}`}>
+              <a href={`#${item.slug}`}>{item.text}</a>
+            </li>
+          ))}
+      </ul>
+    </aside>
+  </div>
+
+  <nav class="article-pagination">
+    {prev ? (
+      <a class="card pager-card" href={prev.permalink}>
+        <small>上一篇</small>
+        <strong>{prev.title}</strong>
+      </a>
+    ) : (
+      <div class="card pager-card pager-card--empty">没有上一篇了</div>
+    )}
+    {next ? (
+      <a class="card pager-card" href={next.permalink}>
+        <small>下一篇</small>
+        <strong>{next.title}</strong>
+      </a>
+    ) : (
+      <div class="card pager-card pager-card--empty">没有下一篇了</div>
+    )}
+  </nav>
+
+  <Comments />
+</article>

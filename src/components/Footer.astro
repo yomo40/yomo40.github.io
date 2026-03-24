@@ -1,0 +1,21 @@
+﻿---
+import { siteConfig, socialLinks } from "@/config/site";
+---
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <p>
+      © {new Date().getFullYear()} {siteConfig.author} · Built with Astro + GitHub
+      Pages
+    </p>
+    <ul>
+      {socialLinks.map((item) => (
+        <li>
+          <a href={item.href} target="_blank" rel="noreferrer">
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</footer>

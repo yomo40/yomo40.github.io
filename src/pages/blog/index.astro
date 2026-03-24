@@ -1,0 +1,33 @@
+﻿---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import { collectionMeta } from "@/config/site";
+import { getPostsByCollection } from "@/utils/content";
+
+const posts = await getPostsByCollection("blog");
+---
+
+<BaseLayout
+  title={collectionMeta.blog.label}
+  heroTitle={collectionMeta.blog.label}
+  heroSubtitle={collectionMeta.blog.description}
+>
+  <section class="card page-title-card">
+    <h2>{collectionMeta.blog.label}</h2>
+    <p>共 {posts.length} 篇文章。</p>
+  </section>
+
+  {
+    posts.length ? (
+      <section class="post-grid">
+        {posts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </section>
+    ) : (
+      <section class="card">
+        <p>暂无文章。</p>
+      </section>
+    )
+  }
+</BaseLayout>

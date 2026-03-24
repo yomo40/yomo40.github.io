@@ -1,0 +1,115 @@
+---
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+import Sidebar from "@/components/Sidebar.astro";
+import { siteConfig } from "@/config/site";
+import "@/styles/base.css";
+import "@/styles/prose.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  showSidebar?: boolean;
+  pageClass?: string;
+}
+
+const {
+  title,
+  description = siteConfig.description,
+  heroTitle = siteConfig.heroTitle,
+  heroSubtitle = siteConfig.heroSubtitle,
+  showSidebar = true,
+  pageClass = ""
+} = Astro.props;
+
+const pageTitle = title ? `${title} | ${siteConfig.title}` : siteConfig.title;
+const baseUrl = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/png" href="/pn.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script is:inline>
+      (() => {
+        const key = "yomo-theme";
+        const root = document.documentElement;
+        const stored = localStorage.getItem(key);
+        const theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+        root.setAttribute("data-theme", theme);
+      })();
+    </script>
+    <script is:inline define:vars={{ baseUrl }}>
+      (() => {
+        if (baseUrl === "/") return;
+        const normalizedBase = baseUrl.endsWith("/")
+          ? baseUrl.slice(0, -1)
+          : baseUrl;
+
+        document.addEventListener("DOMContentLoaded", () => {
+          document.querySelectorAll("a[href^='/']").forEach((anchor) => {
+            const href = anchor.getAttribute("href");
+            if (!href) return;
+            if (href.startsWith("//")) return;
+            if (href.startsWith(normalizedBase + "/")) return;
+            anchor.setAttribute("href", normalizedBase + href);
+          });
+        });
+      })();
+    </script>
+  </head>
+  <body class={`page-enter ${pageClass}`.trim()}>
+    <div class="banner-layer" aria-hidden="true"></div>
+    <Header />
+
+    <section class="hero-banner">
+      <div class="hero-banner__content">
+        <p class="hero-kicker">ACG Reading Journal</p>
+        <h1>{heroTitle}</h1>
+        <p>{heroSubtitle}</p>
+      </div>
+    </section>
+
+    <div class={`content-grid ${showSidebar ? "" : "content-grid--wide"}`}>
+      {showSidebar && <Sidebar />}
+      <main class="main-pane">
+        <slot />
+      </main>
+    </div>
+
+    <Footer />
+
+    <script is:inline>
+      (() => {
+        const mount = () => {
+          requestAnimationFrame(() => {
+            document.body.classList.add("page-ready");
+          });
+        };
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", mount, { once: true });
+        } else {
+          mount();
+        }
+      })();
+    </script>
+  </body>
+</html>

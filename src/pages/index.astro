@@ -1,0 +1,38 @@
+﻿---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import GitHubPulse from "@/components/GitHubPulse.astro";
+import { siteConfig } from "@/config/site";
+import { getAllPosts } from "@/utils/content";
+
+const latest = await getAllPosts();
+---
+
+<BaseLayout>
+  <section class="card dashboard-zone">
+    <p class="section-kicker">我在干嘛</p>
+    <h2>我的 GitHub 提交与已合并 PR</h2>
+
+    <GitHubPulse username={siteConfig.githubUser} commitLimit={5} prLimit={5} />
+  </section>
+
+  <section class="stack-section">
+    <div class="section-head">
+      <h2>最近更新</h2>
+      <a href="/timeline/">查看时间线</a>
+    </div>
+    {
+      latest.length ? (
+        <div class="post-grid">
+          {latest.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      ) : (
+        <section class="card">
+          <p>发布首篇文章后，这里会自动显示最近更新列表。</p>
+        </section>
+      )
+    }
+  </section>
+</BaseLayout>

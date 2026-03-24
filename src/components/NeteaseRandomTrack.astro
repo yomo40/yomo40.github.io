@@ -1,0 +1,208 @@
+﻿---
+interface Props {
+  playlistId: string;
+  playlistUrl?: string;
+}
+
+const { playlistId, playlistUrl = `https://music.163.com/playlist?id=${playlistId}` } =
+  Astro.props;
+const safeId = playlistId.replace(/\D/g, "") || "playlist";
+const rootId = `netease-random-${safeId}`;
+---
+
+<div
+  id={rootId}
+  class="netease-random"
+  data-playlist-id={playlistId}
+  data-playlist-url={playlistUrl}
+>
+  <p class="widget-empty" data-status>正在从歌单拉取曲目...</p>
+
+  <div class="netease-random__track" data-track hidden>
+    <a class="netease-random__title" data-title href="#" target="_blank" rel="noreferrer">
+      歌曲标题
+    </a>
+    <p class="netease-random__meta" data-meta></p>
+
+    <iframe
+      class="netease-random__player"
+      data-player
+      title="网易云在线播放器"
+      frameborder="0"
+      marginwidth="0"
+      marginheight="0"
+      width="100%"
+      height="86"
+      loading="lazy"
+      hidden
+    ></iframe>
+
+    <div class="netease-random__actions">
+      <button type="button" class="widget-btn" data-refresh>换一首</button>
+      <a
+        class="widget-btn widget-btn--link"
+        data-playlist-link
+        href={playlistUrl}
+        target="_blank"
+        rel="noreferrer"
+      >
+        打开歌单
+      </a>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ rootId }}>
+  (() => {
+    const root = document.getElementById(rootId);
+    if (!root || root.dataset.ready === "true") return;
+    root.dataset.ready = "true";
+
+    const playlistId = root.dataset.playlistId || "";
+    const playlistUrl = root.dataset.playlistUrl || "https://music.163.com";
+
+    const statusEl = root.querySelector("[data-status]");
+    const trackWrap = root.querySelector("[data-track]");
+    const titleEl = root.querySelector("[data-title]");
+    const metaEl = root.querySelector("[data-meta]");
+    const playerEl = root.querySelector("[data-player]");
+    const refreshBtn = root.querySelector("[data-refresh]");
+    const playlistLinkEl = root.querySelector("[data-playlist-link]");
+
+    if (
+      !statusEl ||
+      !trackWrap ||
+      !titleEl ||
+      !metaEl ||
+      !playerEl ||
+      !refreshBtn ||
+      !playlistLinkEl
+    ) {
+      return;
+    }
+
+    playlistLinkEl.setAttribute("href", playlistUrl);
+
+    function setStatus(text) {
+      statusEl.hidden = false;
+      statusEl.textContent = text;
+      trackWrap.hidden = true;
+    }
+
+    function parseSongId(item) {
+      const candidates = [item?.url, item?.lrc, item?.pic];
+      for (const value of candidates) {
+        const match = /(?:\?|&)id=(\d+)/.exec(value || "");
+        if (match?.[1]) return match[1];
+      }
+      return "";
+    }
+
+    function toTrackLink(songId) {
+      if (!songId) return playlistUrl;
+      return `https://music.163.com/song?id=${songId}`;
+    }
+
+    function toPlayerLink(songId) {
+      if (!songId) return "";
+      return `https://music.163.com/outchain/player?type=2&id=${songId}&auto=0&height=66`;
+    }
+
+    function normalizeTrack(item) {
+      const title = String(item?.title || item?.name || "").trim();
+      const author = String(item?.author || "").trim();
+      const songId = parseSongId(item);
+
+      return {
+        title: title || "未命名曲目",
+        author: author || "未知艺术家",
+        songId,
+        link: toTrackLink(songId)
+      };
+    }
+
+    function pickRandomIndex(total, current) {
+      if (total <= 1) return 0;
+      let next = Math.floor(Math.random() * total);
+      if (next === current) {
+        next = (next + 1) % total;
+      }
+      return next;
+    }
+
+    let tracks = [];
+    let currentIndex = -1;
+
+    function renderCurrent() {
+      if (!tracks.length) {
+        setStatus("歌单为空，暂时无法随机。");
+        return;
+      }
+
+      const nextIndex = pickRandomIndex(tracks.length, currentIndex);
+      currentIndex = nextIndex;
+      const current = tracks[nextIndex];
+
+      titleEl.textContent = current.title;
+      titleEl.setAttribute("href", current.link);
+      metaEl.textContent = `${current.author} · 来自网易云歌单`;
+
+      const playerSrc = toPlayerLink(current.songId);
+      if (playerSrc) {
+        playerEl.hidden = false;
+        playerEl.setAttribute("src", playerSrc);
+      } else {
+        playerEl.hidden = true;
+        playerEl.removeAttribute("src");
+      }
+
+      statusEl.hidden = true;
+      trackWrap.hidden = false;
+    }
+
+    async function fetchLatestPlaylist() {
+      if (!playlistId) {
+        setStatus("未配置歌单 ID。");
+        return;
+      }
+
+      setStatus("正在拉取歌单...");
+
+      // 通过实时请求桥接接口，确保每次访问都从最新歌单数据中抽取。
+      const endpoint =
+        `https://api.i-meto.com/meting/api?server=netease&type=playlist&id=${encodeURIComponent(playlistId)}` +
+        `&t=${Date.now()}`;
+
+      try {
+        const response = await fetch(endpoint, {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+        tracks = (Array.isArray(payload) ? payload : [])
+          .map(normalizeTrack)
+          .filter((item) => item.title && item.link);
+
+        if (!tracks.length) {
+          setStatus("暂未获取到可播放曲目。");
+          return;
+        }
+
+        renderCurrent();
+      } catch (error) {
+        console.error("[netease] playlist fetch failed:", error);
+        setStatus("歌单加载失败，请稍后重试。");
+      }
+    }
+
+    refreshBtn.addEventListener("click", () => {
+      renderCurrent();
+    });
+
+    fetchLatestPlaylist();
+  })();
+</script>

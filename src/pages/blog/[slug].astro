@@ -1,0 +1,68 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import ArticleShell from "@/components/ArticleShell.astro";
+import { collectionMeta } from "@/config/site";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getCollectionEntries, getEntrySlug } from "@/utils/content";
+
+type Entry = CollectionEntry<"blog">;
+
+interface NeighborPost {
+  title: string;
+  permalink: string;
+}
+
+interface Props {
+  post: Entry;
+  prev: NeighborPost | null;
+  next: NeighborPost | null;
+}
+
+export async function getStaticPaths() {
+  const posts = [...((await getCollectionEntries()) as Entry[])].sort(
+    (a, b) => b.data.date.getTime() - a.data.date.getTime()
+  );
+
+  return posts.map((post, index) => ({
+    params: { slug: getEntrySlug(post) },
+    props: {
+      post,
+      prev: posts[index + 1]
+        ? {
+            title: posts[index + 1].data.title,
+            permalink: `/blog/${getEntrySlug(posts[index + 1])}/`
+          }
+        : null,
+      next: posts[index - 1]
+        ? {
+            title: posts[index - 1].data.title,
+            permalink: `/blog/${getEntrySlug(posts[index - 1])}/`
+          }
+        : null
+    }
+  }));
+}
+
+const { post, prev, next } = Astro.props as Props;
+const { Content, headings } = await render(post);
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  heroTitle={collectionMeta.blog.label}
+  heroSubtitle={collectionMeta.blog.description}
+>
+  <ArticleShell
+    collection="blog"
+    title={post.data.title}
+    description={post.data.description}
+    date={post.data.date}
+    updated={post.data.updated}
+    headings={headings}
+    prev={prev}
+    next={next}
+  >
+    <Content />
+  </ArticleShell>
+</BaseLayout>

@@ -1,0 +1,31 @@
+:root {
+  --page-bg: #e7ecf2;
+  --banner-top: #5e97cb;
+  --banner-bottom: #9bc0e2;
+  --surface: #f8fbff;
+  --surface-2: #edf4fc;
+  --text: #243a55;
+  --muted: #6f87a2;
+  --line: #d5dfec;
+  --primary: #4d90da;
+  --primary-soft: #eaf3fc;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --shadow-md: 0 14px 32px rgba(53, 86, 121, 0.14);
+  --shadow-sm: 0 8px 18px rgba(53, 86, 121, 0.1);
+}
+
+[data-theme="dark"] {
+  --page-bg: #08131f;
+  --banner-top: #1a3654;
+  --banner-bottom: #224d74;
+  --surface: #142334;
+  --surface-2: #1a2b3f;
+  --text: #dbe9f8;
+  --muted: #8ca4bf;
+  --line: #2a4059;
+  --primary: #6cb0f4;
+  --primary-soft: #20344a;
+  --shadow-md: 0 16px 34px rgba(0, 0, 0, 0.42);
+  --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.28);
+}

@@ -1,0 +1,26 @@
+﻿---
+import { collectionMeta } from "@/config/site";
+import type { PostItem } from "@/utils/content";
+import { formatDate } from "@/utils/date";
+
+interface Props {
+  post: PostItem;
+}
+
+const { post } = Astro.props;
+const meta = collectionMeta[post.collection];
+---
+
+<article class="card post-card">
+  <div class="post-card__meta">
+    <span>{meta.label}</span>
+    <span>·</span>
+    <time datetime={post.entry.data.date.toISOString()}>
+      {formatDate(post.entry.data.date)}
+    </time>
+  </div>
+  <h2>
+    <a href={post.permalink}>{post.entry.data.title}</a>
+  </h2>
+  <p>{post.entry.data.description}</p>
+</article>

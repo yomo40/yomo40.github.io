@@ -1,0 +1,24 @@
+﻿---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getCategoryIndex } from "@/utils/content";
+
+const categories = await getCategoryIndex();
+---
+
+<BaseLayout title="分类" heroTitle="分类" heroSubtitle="按内容类型与主题组织阅读路径。">
+  <section class="card page-title-card">
+    <h2>分类索引</h2>
+    <p>共 {categories.length} 个分类。</p>
+  </section>
+
+  <section class="card">
+    <ul class="term-list term-list--grid">
+      {categories.map((item) => (
+        <li>
+          <a href={`/categories/${item.slug}/`}>{item.name}</a>
+          <span>{item.count}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>

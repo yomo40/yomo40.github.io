@@ -1,0 +1,53 @@
+﻿---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { collectionMeta } from "@/config/site";
+import { getAllPosts } from "@/utils/content";
+import { formatDate } from "@/utils/date";
+
+const posts = await getAllPosts();
+const groups = posts.reduce(
+  (map, post) => {
+    const year = String(post.entry.data.date.getFullYear());
+    if (!map.has(year)) {
+      map.set(year, []);
+    }
+    map.get(year)?.push(post);
+    return map;
+  },
+  new Map<string, typeof posts>()
+);
+
+const orderedYears = Array.from(groups.keys()).sort((a, b) => Number(b) - Number(a));
+---
+
+<BaseLayout
+  title="时间线"
+  heroTitle="时间线"
+  heroSubtitle="按年份回看每一次记录与变化。"
+>
+  <section class="card page-title-card">
+    <h2>时间线</h2>
+    <p>共收录 {posts.length} 篇文章。</p>
+  </section>
+
+  <section class="archive-stack">
+    {
+      orderedYears.map((year) => (
+        <article class="card archive-group">
+          <h3>{year}</h3>
+          <ul>
+            {groups.get(year)?.map((post) => (
+              <li>
+                <time datetime={post.entry.data.date.toISOString()}>
+                  {formatDate(post.entry.data.date)}
+                </time>
+                <span>{collectionMeta[post.collection].label}</span>
+                <a href={post.permalink}>{post.entry.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </article>
+      ))
+    }
+  </section>
+</BaseLayout>

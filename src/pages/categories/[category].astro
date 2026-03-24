@@ -1,0 +1,36 @@
+﻿---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import { getAllPosts, getCategoryIndex, slugifyTerm } from "@/utils/content";
+
+export async function getStaticPaths() {
+  const [posts, categories] = await Promise.all([
+    getAllPosts(),
+    getCategoryIndex()
+  ]);
+
+  return categories.map((category) => ({
+    params: { category: category.slug },
+    props: {
+      categoryName: category.name,
+      posts: posts.filter(
+        (post) => slugifyTerm(post.entry.data.category) === category.slug
+      )
+    }
+  }));
+}
+
+const { categoryName, posts } = Astro.props;
+---
+
+<BaseLayout
+  title={`分类：${categoryName}`}
+  heroTitle={categoryName}
+  heroSubtitle={`共 ${posts.length} 篇文章`}
+>
+  <section class="post-grid">
+    {posts.map((post) => (
+      <PostCard post={post} />
+    ))}
+  </section>
+</BaseLayout>

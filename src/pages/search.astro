@@ -1,0 +1,96 @@
+﻿---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const baseUrl = import.meta.env.BASE_URL;
+const isDev = import.meta.env.DEV;
+---
+
+<BaseLayout title="搜索" heroTitle="站内搜索" heroSubtitle="支持标题与正文检索。">
+  <section class="card page-title-card">
+    <h2>搜索文章</h2>
+    <p>输入关键词后将检索静态索引，无需后端服务。</p>
+  </section>
+
+  <section class="card search-card">
+    <div id="search"></div>
+  </section>
+
+  <script is:inline define:vars={{ baseUrl, isDev }}>
+    const root = document.getElementById("search");
+
+    function normalizeBase(path) {
+      if (!path || path === "/") return "/";
+      return path.endsWith("/") ? path : `${path}/`;
+    }
+
+    function loadPagefindUI(scriptSrc) {
+      return new Promise((resolve, reject) => {
+        if (window.PagefindUI) {
+          resolve(window.PagefindUI);
+          return;
+        }
+
+        const existing = document.querySelector("script[data-pagefind-ui='true']");
+        if (existing) {
+          existing.addEventListener(
+            "load",
+            () => resolve(window.PagefindUI),
+            { once: true }
+          );
+          existing.addEventListener(
+            "error",
+            () => reject(new Error("Pagefind UI script load failed")),
+            { once: true }
+          );
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = scriptSrc;
+        script.async = true;
+        script.dataset.pagefindUi = "true";
+        script.onload = () => {
+          if (window.PagefindUI) {
+            resolve(window.PagefindUI);
+          } else {
+            reject(new Error("PagefindUI is not available on window"));
+          }
+        };
+        script.onerror = () =>
+          reject(new Error(`Failed to load script: ${scriptSrc}`));
+        document.head.appendChild(script);
+      });
+    }
+
+    async function initSearch() {
+      if (!root) return;
+      if (root.dataset.ready === "true") return;
+
+      try {
+        const normalizedBase = normalizeBase(baseUrl);
+        const bundlePath = `${normalizedBase}pagefind/`;
+        const scriptSrc = `${bundlePath}pagefind-ui.js`;
+        const PagefindUI = await loadPagefindUI(scriptSrc);
+
+        new PagefindUI({
+          element: "#search",
+          showImages: false,
+          highlightParam: "highlight",
+          bundlePath,
+          translations: {
+            placeholder: "输入关键词，例如：复盘、CTF、情绪"
+          }
+        });
+
+        root.dataset.ready = "true";
+      } catch (error) {
+        console.error("[search] Pagefind initialization failed:", error);
+        root.innerHTML = isDev
+          ? "<p>开发模式下搜索索引默认不存在。请执行 <code>npm run build</code> 后再预览搜索结果。</p>"
+          : "<p>搜索索引加载失败，请刷新重试；若问题持续，请重新构建并部署站点。</p>";
+      }
+    }
+
+    initSearch();
+  </script>
+</BaseLayout>

@@ -1,0 +1,55 @@
+﻿<button class="theme-toggle" type="button" aria-label="切换主题" data-theme-toggle>
+  <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+  <span class="theme-toggle__label">主题</span>
+</button>
+
+<script is:inline>
+  const key = "yomo-theme";
+  const root = document.documentElement;
+  const button = document.querySelector("[data-theme-toggle]");
+
+  function setTheme(theme) {
+    root.setAttribute("data-theme", theme);
+    localStorage.setItem(key, theme);
+  }
+
+  function applyTheme(theme) {
+    if (root.getAttribute("data-theme") === theme) return;
+    root.classList.add("theme-animating");
+
+    const clear = () => {
+      window.setTimeout(() => {
+        root.classList.remove("theme-animating");
+      }, 360);
+    };
+
+    if ("startViewTransition" in document) {
+      document.startViewTransition(() => {
+        setTheme(theme);
+      }).finished.finally(clear);
+      return;
+    }
+
+    setTheme(theme);
+    clear();
+  }
+
+  function getSystemTheme() {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
+
+  function initTheme() {
+    const stored = localStorage.getItem(key);
+    const theme = stored || getSystemTheme();
+    setTheme(theme);
+  }
+
+  initTheme();
+
+  button?.addEventListener("click", () => {
+    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    applyTheme(next);
+  });
+</script>
