@@ -3,6 +3,10 @@
   description: "记录心理历程、个人思考与学习笔记的静态博客。",
   author: "yomo40",
   githubUser: "yomo40",
+  homeCounterUrl:
+    "https://camo.githubusercontent.com/d415bf84c82f7bed54e600ad2938388b46bf5c724c3f8fa9e5b344918dcdf4f9/68747470733a2f2f6b6f6d617265762e636f6d2f67687076632f3f757365726e616d653d796f6d6f34302d686f6d6526636f6c6f723d354237303841267374796c653d666c61742d737175617265266c6162656c3d686f6d652b7669657773",
+  homeCounterCanonicalUrl:
+    "https://komarev.com/ghpvc/?username=yomo40-home&color=5B708A&style=flat-square&label=home+views",
   neteasePlaylistId: "889043208",
   neteasePlaylistUrl: "https://music.163.com/playlist?id=889043208",
   siteUrl: "https://yomo40.github.io",

@@ -12,6 +12,22 @@ const latest = await getAllPosts();
   <section class="card dashboard-zone">
     <p class="section-kicker">我在干嘛</p>
     <h2>我的 GitHub 提交与已合并 PR</h2>
+    <div class="home-counter" aria-label="首页访问计数器">
+      <span>首页访问</span>
+      <a
+        href={siteConfig.homeCounterCanonicalUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="查看计数器来源"
+      >
+        <img
+          src={siteConfig.homeCounterUrl}
+          alt="首页访问计数"
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
+    </div>
 
     <GitHubPulse username={siteConfig.githubUser} commitLimit={5} prLimit={5} />
   </section>

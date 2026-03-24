@@ -486,6 +486,33 @@ html[data-theme="dark"] .theme-toggle__icon {
   color: var(--muted);
 }
 
+.home-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 6px 10px 6px 12px;
+}
+
+.home-counter span {
+  font-size: 0.82rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.home-counter a {
+  line-height: 0;
+}
+
+.home-counter img {
+  height: 20px;
+  width: auto;
+  border-radius: 999px;
+}
+
 .netease-random {
   display: grid;
   gap: 10px;
