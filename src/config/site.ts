@@ -1,6 +1,6 @@
 ﻿export const siteConfig = {
   title: "yomo40 的博客",
-  description: "记录心理历程、个人思考与学习笔记的静态博客。",
+  description: "一个普普通通的废柴",
   author: "yomo40",
   githubUser: "yomo40",
   homeCounterUrl:
@@ -101,8 +101,10 @@ export const giscusConfig = {
     readEnv("PUBLIC_GISCUS_CATEGORY_ID", "GISCUS_CATEGORY_ID") ||
     giscusDefaults.categoryId,
   mapping:
-    readEnv("PUBLIC_GISCUS_MAPPING", "GISCUS_MAPPING") || giscusDefaults.mapping,
-  strict: readEnv("PUBLIC_GISCUS_STRICT", "GISCUS_STRICT") || giscusDefaults.strict,
+    readEnv("PUBLIC_GISCUS_MAPPING", "GISCUS_MAPPING") ||
+    giscusDefaults.mapping,
+  strict:
+    readEnv("PUBLIC_GISCUS_STRICT", "GISCUS_STRICT") || giscusDefaults.strict,
   reactionsEnabled:
     readEnv("PUBLIC_GISCUS_REACTIONS_ENABLED", "GISCUS_REACTIONS_ENABLED") ||
     giscusDefaults.reactionsEnabled,
@@ -112,8 +114,7 @@ export const giscusConfig = {
   inputPosition:
     readEnv("PUBLIC_GISCUS_INPUT_POSITION", "GISCUS_INPUT_POSITION") ||
     giscusDefaults.inputPosition,
-  theme:
-    readEnv("PUBLIC_GISCUS_THEME", "GISCUS_THEME") || giscusDefaults.theme,
+  theme: readEnv("PUBLIC_GISCUS_THEME", "GISCUS_THEME") || giscusDefaults.theme,
   lang: readEnv("PUBLIC_GISCUS_LANG", "GISCUS_LANG") || giscusDefaults.lang,
 };
 

@@ -3,6 +3,8 @@
   font-size: 1.08rem;
   line-height: 1.88;
   color: var(--text);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .prose h2,
@@ -86,6 +88,28 @@
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin: 1.15em 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--line);
+  padding: 0.48em 0.7em;
+  text-align: left;
+}
+
+.prose th {
+  background: var(--surface-2);
+  font-family: "Noto Sans SC", sans-serif;
 }
 
 .prose img,
