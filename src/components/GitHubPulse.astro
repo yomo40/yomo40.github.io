@@ -123,13 +123,12 @@ const componentId = `github-pulse-${normalizedId}`;
       });
     }
 
-    async function fetchRecentCommits() {
+    async function fetchRecentCommitsFromEvents() {
       const events = await requestJSON(
         `https://api.github.com/users/${encodeURIComponent(
           username
-        )}/events/public?per_page=50`
+        )}/events/public?per_page=100`
       );
-
       const commits = [];
 
       for (const event of events) {
@@ -163,6 +162,69 @@ const componentId = `github-pulse-${normalizedId}`;
       }
 
       return commits;
+    }
+
+    async function fetchRecentCommitsFromSearch() {
+      const query = encodeURIComponent(`author:${username}`);
+      const data = await requestJSON(
+        `https://api.github.com/search/commits?q=${query}&sort=author-date&order=desc&per_page=${Math.max(
+          commitLimit * 2,
+          10
+        )}`
+      );
+
+      const items = Array.isArray(data?.items) ? data.items : [];
+
+      return items
+        .map((item) => {
+          const sha = String(item?.sha || "");
+          if (!sha) return null;
+
+          const message = String(item?.commit?.message || "无提交说明")
+            .split("\n")[0]
+            .trim();
+          const repo = item?.repository?.full_name || "未知仓库";
+          const date = item?.commit?.author?.date || item?.commit?.committer?.date;
+
+          return {
+            title: message || "无提交说明",
+            url: item?.html_url || `https://github.com/${repo}/commit/${sha}`,
+            meta: `${repo} · ${sha.slice(0, 7)} · ${formatDate(date)}`
+          };
+        })
+        .filter(Boolean);
+    }
+
+    async function fetchRecentCommits() {
+      let eventsFailed = false;
+      const eventsCommits = await fetchRecentCommitsFromEvents().catch(() => {
+        eventsFailed = true;
+        return [];
+      });
+
+      if (eventsCommits.length >= commitLimit) {
+        return eventsCommits.slice(0, commitLimit);
+      }
+
+      let searchFailed = false;
+      const searchCommits = await fetchRecentCommitsFromSearch().catch(() => {
+        searchFailed = true;
+        return [];
+      });
+      const merged = [...eventsCommits];
+      const seen = new Set(merged.map((item) => item.url));
+
+      searchCommits.forEach((item) => {
+        if (seen.has(item.url)) return;
+        seen.add(item.url);
+        merged.push(item);
+      });
+
+      if (!merged.length && eventsFailed && searchFailed) {
+        throw new Error("Both commit data sources failed");
+      }
+
+      return merged.slice(0, commitLimit);
     }
 
     async function fetchMergedPRs() {
