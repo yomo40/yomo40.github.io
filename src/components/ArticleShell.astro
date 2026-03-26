@@ -107,6 +107,11 @@ const { collection, title, description, date, updated, headings, prev, next } = 
     const downBtn = tocCard?.querySelector("[data-toc-down]");
     const tocLinks = [...article.querySelectorAll("[data-toc-link]")];
     let activeSlug = "";
+    let manualTocInteractionAt = 0;
+
+    const markManualTocInteraction = () => {
+      manualTocInteractionAt = Date.now();
+    };
 
     const syncTocButtons = () => {
       if (!tocScroll || !upBtn || !downBtn) return;
@@ -127,14 +132,43 @@ const { collection, title, description, date, updated, headings, prev, next } = 
 
     upBtn?.addEventListener("click", () => {
       if (!tocScroll) return;
+      markManualTocInteraction();
       tocScroll.scrollBy({ top: -scrollStep(), behavior: "smooth" });
     });
 
     downBtn?.addEventListener("click", () => {
       if (!tocScroll) return;
+      markManualTocInteraction();
       tocScroll.scrollBy({ top: scrollStep(), behavior: "smooth" });
     });
 
+    tocScroll?.addEventListener(
+      "wheel",
+      (event) => {
+        if (!tocScroll) return;
+        markManualTocInteraction();
+
+        const canScroll = tocScroll.scrollHeight > tocScroll.clientHeight + 1;
+        if (!canScroll) return;
+
+        const delta = event.deltaY;
+        const atTop = tocScroll.scrollTop <= 0;
+        const atBottom =
+          tocScroll.scrollTop + tocScroll.clientHeight >=
+          tocScroll.scrollHeight - 1;
+
+        const shouldContain =
+          (delta < 0 && !atTop) || (delta > 0 && !atBottom);
+        if (!shouldContain) return;
+
+        event.preventDefault();
+        tocScroll.scrollTop += delta;
+      },
+      { passive: false }
+    );
+    tocScroll?.addEventListener("touchstart", markManualTocInteraction, {
+      passive: true
+    });
     tocScroll?.addEventListener("scroll", syncTocButtons, { passive: true });
     syncTocButtons();
 
@@ -148,26 +182,45 @@ const { collection, title, description, date, updated, headings, prev, next } = 
       })
       .filter(Boolean);
 
+    const keepActiveLinkInView = (link) => {
+      if (!tocScroll) return;
+      const scrollRect = tocScroll.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      const topPadding = 8;
+      const bottomPadding = 10;
+
+      if (linkRect.top < scrollRect.top + topPadding) {
+        tocScroll.scrollBy({
+          top: linkRect.top - (scrollRect.top + topPadding),
+          behavior: "smooth"
+        });
+        return;
+      }
+
+      if (linkRect.bottom > scrollRect.bottom - bottomPadding) {
+        tocScroll.scrollBy({
+          top: linkRect.bottom - (scrollRect.bottom - bottomPadding),
+          behavior: "smooth"
+        });
+      }
+    };
+
     const setActiveTocLink = (slug) => {
       if (!slug || slug === activeSlug) return;
       activeSlug = slug;
+      const shouldAutoScrollToc = Date.now() - manualTocInteractionAt > 420;
       tocLinks.forEach((link) => {
         const href = link.getAttribute("href");
         const isActive = href === `#${slug}`;
         link.classList.toggle("is-active", isActive);
         if (isActive) {
           link.setAttribute("aria-current", "true");
-          if (tocScroll) {
-            const nextTop = Math.max(
-              0,
-              link.offsetTop - tocScroll.clientHeight * 0.34
-            );
-            tocScroll.scrollTo({ top: nextTop, behavior: "smooth" });
-          }
+          if (shouldAutoScrollToc) keepActiveLinkInView(link);
         } else {
           link.removeAttribute("aria-current");
         }
       });
+      syncTocButtons();
     };
 
     const updateActiveHeading = () => {

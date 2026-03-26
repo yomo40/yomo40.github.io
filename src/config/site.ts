@@ -10,8 +10,8 @@
   neteasePlaylistId: "889043208",
   neteasePlaylistUrl: "https://music.163.com/playlist?id=889043208",
   siteUrl: "https://yomo40.github.io",
-  heroTitle: "在日常里认真写作",
-  heroSubtitle: "把思考与笔记整理成可回看的文字。"
+  heroTitle: "这里是yomo40,一个普普通通的废柴",
+  heroSubtitle: "最喜欢妖梦了"
 };
 
 export const navLinks = [
@@ -63,23 +63,78 @@ export const acgProfile = {
   ]
 } as const;
 
-export const giscusConfig = {
-  repo: import.meta.env.PUBLIC_GISCUS_REPO ?? "",
-  repoId: import.meta.env.PUBLIC_GISCUS_REPO_ID ?? "",
-  category: import.meta.env.PUBLIC_GISCUS_CATEGORY ?? "General",
-  categoryId: import.meta.env.PUBLIC_GISCUS_CATEGORY_ID ?? "",
-  mapping: import.meta.env.PUBLIC_GISCUS_MAPPING ?? "pathname",
-  strict: import.meta.env.PUBLIC_GISCUS_STRICT ?? "0",
-  reactionsEnabled: import.meta.env.PUBLIC_GISCUS_REACTIONS_ENABLED ?? "1",
-  emitMetadata: import.meta.env.PUBLIC_GISCUS_EMIT_METADATA ?? "0",
-  inputPosition: import.meta.env.PUBLIC_GISCUS_INPUT_POSITION ?? "top",
-  theme: import.meta.env.PUBLIC_GISCUS_THEME ?? "preferred_color_scheme",
-  lang: import.meta.env.PUBLIC_GISCUS_LANG ?? "zh-CN"
+const normalizeEnvValue = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  const isWrappedInDoubleQuotes =
+    trimmed.startsWith('"') && trimmed.endsWith('"');
+  const isWrappedInSingleQuotes =
+    trimmed.startsWith("'") && trimmed.endsWith("'");
+
+  if (isWrappedInDoubleQuotes || isWrappedInSingleQuotes) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
 };
 
-export const commentsEnabled = Boolean(
-  giscusConfig.repo &&
-    giscusConfig.repoId &&
-    giscusConfig.category &&
-    giscusConfig.categoryId
-);
+const readEnv = (...keys: string[]): string => {
+  const env = import.meta.env as Record<string, unknown>;
+  const processEnv =
+    (globalThis as { process?: { env?: Record<string, unknown> } }).process
+      ?.env ?? {};
+  for (const key of keys) {
+    const value = normalizeEnvValue(env[key] ?? processEnv[key]);
+    if (value) {
+      return value;
+    }
+  }
+  return "";
+};
+
+export const giscusConfig = {
+  repo: readEnv("PUBLIC_GISCUS_REPO", "GISCUS_REPO"),
+  repoId: readEnv("PUBLIC_GISCUS_REPO_ID", "GISCUS_REPO_ID"),
+  category:
+    readEnv("PUBLIC_GISCUS_CATEGORY", "GISCUS_CATEGORY") || "General",
+  categoryId: readEnv("PUBLIC_GISCUS_CATEGORY_ID", "GISCUS_CATEGORY_ID"),
+  mapping: readEnv("PUBLIC_GISCUS_MAPPING", "GISCUS_MAPPING") || "pathname",
+  strict: readEnv("PUBLIC_GISCUS_STRICT", "GISCUS_STRICT") || "0",
+  reactionsEnabled:
+    readEnv("PUBLIC_GISCUS_REACTIONS_ENABLED", "GISCUS_REACTIONS_ENABLED") ||
+    "1",
+  emitMetadata:
+    readEnv("PUBLIC_GISCUS_EMIT_METADATA", "GISCUS_EMIT_METADATA") || "0",
+  inputPosition:
+    readEnv("PUBLIC_GISCUS_INPUT_POSITION", "GISCUS_INPUT_POSITION") || "top",
+  theme:
+    readEnv("PUBLIC_GISCUS_THEME", "GISCUS_THEME") ||
+    "preferred_color_scheme",
+  lang: readEnv("PUBLIC_GISCUS_LANG", "GISCUS_LANG") || "zh-CN"
+};
+
+const requiredGiscusFields: Array<{
+  field: keyof Pick<
+    typeof giscusConfig,
+    "repo" | "repoId" | "category" | "categoryId"
+  >;
+  env: string;
+}> = [
+  { field: "repo", env: "PUBLIC_GISCUS_REPO" },
+  { field: "repoId", env: "PUBLIC_GISCUS_REPO_ID" },
+  { field: "category", env: "PUBLIC_GISCUS_CATEGORY" },
+  { field: "categoryId", env: "PUBLIC_GISCUS_CATEGORY_ID" }
+];
+
+export const giscusMissingFields = requiredGiscusFields
+  .filter(({ field }) => !giscusConfig[field])
+  .map(({ env }) => env);
+
+export const commentsEnabled = giscusMissingFields.length === 0;

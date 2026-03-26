@@ -905,6 +905,10 @@ html[data-theme="dark"] .theme-toggle__icon {
   top: 112px;
   padding: 16px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 132px);
+  max-height: calc(100dvh - 132px);
 }
 
 .article-header,
@@ -940,6 +944,7 @@ html[data-theme="dark"] .theme-toggle__icon {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  margin-bottom: 8px;
 }
 
 .toc-controls {
@@ -978,10 +983,14 @@ html[data-theme="dark"] .theme-toggle__icon {
 }
 
 .toc-scroll {
-  max-height: calc(100vh - 230px);
+  min-height: 0;
+  flex: 1 1 auto;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 6px;
   scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 }
 
 .toc-scroll::-webkit-scrollbar {
@@ -1206,6 +1215,7 @@ html[data-theme="dark"] .theme-toggle__icon {
 
   .toc-card {
     position: static;
+    max-height: none;
   }
 
   .toc-controls {
@@ -1213,9 +1223,10 @@ html[data-theme="dark"] .theme-toggle__icon {
   }
 
   .toc-scroll {
-    max-height: none;
-    overflow: visible;
-    padding-right: 0;
+    max-height: min(52vh, 460px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 2px;
   }
 
   .collection-strip {
