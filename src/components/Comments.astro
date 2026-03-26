@@ -8,76 +8,81 @@ import { commentsEnabled, giscusConfig } from "@/config/site";
       <h2>评论</h2>
       <div id="giscus"></div>
       <script is:inline define:vars={{ giscusConfig }}>
-        const container = document.getElementById("giscus");
-        if (!container || container.hasChildNodes()) {
-          return;
-        }
+        (() => {
+          const container = document.getElementById("giscus");
+          if (!container || container.hasChildNodes()) {
+            return;
+          }
 
-        const getCurrentTheme = () => {
-          const theme = document.documentElement.getAttribute("data-theme");
-          return theme === "dark" ? "dark" : "light";
-        };
+          const getCurrentTheme = () => {
+            const theme = document.documentElement.getAttribute("data-theme");
+            return theme === "dark" ? "dark" : "light";
+          };
 
-        const applyGiscusTheme = () => {
-          const frame = document.querySelector("iframe.giscus-frame");
-          if (!frame) return;
-          frame.contentWindow?.postMessage(
-            {
-              giscus: {
-                setConfig: { theme: getCurrentTheme() }
-              }
-            },
-            "https://giscus.app"
-          );
-        };
+          const applyGiscusTheme = () => {
+            const frame = document.querySelector("iframe.giscus-frame");
+            if (!frame) return;
+            frame.contentWindow?.postMessage(
+              {
+                giscus: {
+                  setConfig: { theme: getCurrentTheme() }
+                }
+              },
+              "https://giscus.app"
+            );
+          };
 
-        const mountGiscus = () => {
-          const script = document.createElement("script");
-          script.src = "https://giscus.app/client.js";
-          script.async = true;
-          script.crossOrigin = "anonymous";
-          script.setAttribute("data-repo", giscusConfig.repo);
-          script.setAttribute("data-repo-id", giscusConfig.repoId);
-          script.setAttribute("data-category", giscusConfig.category);
-          script.setAttribute("data-category-id", giscusConfig.categoryId);
-          script.setAttribute("data-mapping", giscusConfig.mapping);
-          script.setAttribute("data-strict", giscusConfig.strict);
-          script.setAttribute(
-            "data-reactions-enabled",
-            giscusConfig.reactionsEnabled
-          );
-          script.setAttribute("data-emit-metadata", giscusConfig.emitMetadata);
-          script.setAttribute("data-input-position", giscusConfig.inputPosition);
-          script.setAttribute("data-theme", getCurrentTheme());
-          script.setAttribute("data-lang", giscusConfig.lang);
-          script.setAttribute("data-loading", "lazy");
-          container.append(script);
-        };
+          const mountGiscus = () => {
+            const script = document.createElement("script");
+            script.src = "https://giscus.app/client.js";
+            script.async = true;
+            script.crossOrigin = "anonymous";
+            script.setAttribute("data-repo", giscusConfig.repo);
+            script.setAttribute("data-repo-id", giscusConfig.repoId);
+            script.setAttribute("data-category", giscusConfig.category);
+            script.setAttribute("data-category-id", giscusConfig.categoryId);
+            script.setAttribute("data-mapping", giscusConfig.mapping);
+            script.setAttribute("data-strict", giscusConfig.strict);
+            script.setAttribute(
+              "data-reactions-enabled",
+              giscusConfig.reactionsEnabled
+            );
+            script.setAttribute("data-emit-metadata", giscusConfig.emitMetadata);
+            script.setAttribute(
+              "data-input-position",
+              giscusConfig.inputPosition
+            );
+            script.setAttribute("data-theme", getCurrentTheme());
+            script.setAttribute("data-lang", giscusConfig.lang);
+            script.setAttribute("data-loading", "lazy");
+            container.append(script);
+          };
 
-        const onThemeChange = () => {
-          window.setTimeout(applyGiscusTheme, 60);
-        };
+          const onThemeChange = () => {
+            window.setTimeout(applyGiscusTheme, 60);
+          };
 
-        window.addEventListener("themechange", onThemeChange);
-        const observer = new MutationObserver(onThemeChange);
-        observer.observe(document.documentElement, {
-          attributes: true,
-          attributeFilter: ["data-theme"]
-        });
+          window.addEventListener("themechange", onThemeChange);
+          const observer = new MutationObserver(onThemeChange);
+          observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["data-theme"]
+          });
 
-        if ("IntersectionObserver" in window) {
-          const lazyObserver = new IntersectionObserver(
-            (entries) => {
-              if (!entries.some((entry) => entry.isIntersecting)) return;
-              mountGiscus();
-              lazyObserver.disconnect();
-            },
-            { rootMargin: "220px 0px" }
-          );
-          lazyObserver.observe(container);
-        } else {
-          mountGiscus();
-        }
+          if ("IntersectionObserver" in window) {
+            const lazyObserver = new IntersectionObserver(
+              (entries) => {
+                if (!entries.some((entry) => entry.isIntersecting)) return;
+                mountGiscus();
+                lazyObserver.disconnect();
+              },
+              { rootMargin: "220px 0px" }
+            );
+            lazyObserver.observe(container);
+          } else {
+            mountGiscus();
+          }
+        })();
       </script>
     </section>
   ) : (

@@ -68,13 +68,13 @@ export const giscusConfig = {
   repoId: import.meta.env.PUBLIC_GISCUS_REPO_ID ?? "",
   category: import.meta.env.PUBLIC_GISCUS_CATEGORY ?? "General",
   categoryId: import.meta.env.PUBLIC_GISCUS_CATEGORY_ID ?? "",
-  mapping: "pathname",
-  strict: "0",
-  reactionsEnabled: "1",
-  emitMetadata: "0",
-  inputPosition: "top",
-  theme: "preferred_color_scheme",
-  lang: "zh-CN"
+  mapping: import.meta.env.PUBLIC_GISCUS_MAPPING ?? "pathname",
+  strict: import.meta.env.PUBLIC_GISCUS_STRICT ?? "0",
+  reactionsEnabled: import.meta.env.PUBLIC_GISCUS_REACTIONS_ENABLED ?? "1",
+  emitMetadata: import.meta.env.PUBLIC_GISCUS_EMIT_METADATA ?? "0",
+  inputPosition: import.meta.env.PUBLIC_GISCUS_INPUT_POSITION ?? "top",
+  theme: import.meta.env.PUBLIC_GISCUS_THEME ?? "preferred_color_scheme",
+  lang: import.meta.env.PUBLIC_GISCUS_LANG ?? "zh-CN"
 };
 
 export const commentsEnabled = Boolean(

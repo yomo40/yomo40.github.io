@@ -48,17 +48,29 @@ const { collection, title, description, date, updated, headings, prev, next } = 
     <section class="card prose article-content">
       <slot />
     </section>
-    <aside class="card toc-card">
-      <h2>目录</h2>
-      <ul>
-        {headings
-          .filter((item) => item.depth === 2 || item.depth === 3)
-          .map((item) => (
-            <li class={`depth-${item.depth}`}>
-              <a href={`#${item.slug}`}>{item.text}</a>
-            </li>
-          ))}
-      </ul>
+    <aside class="card toc-card" data-toc-card>
+      <div class="toc-head">
+        <h2>目录</h2>
+        <div class="toc-controls" aria-label="目录滚动控制">
+          <button type="button" class="toc-control" data-toc-up aria-label="向上滚动目录">
+            ↑
+          </button>
+          <button type="button" class="toc-control" data-toc-down aria-label="向下滚动目录">
+            ↓
+          </button>
+        </div>
+      </div>
+      <div class="toc-scroll" data-toc-scroll>
+        <ul>
+          {headings
+            .filter((item) => item.depth === 2 || item.depth === 3)
+            .map((item) => (
+              <li class={`depth-${item.depth}`}>
+                <a href={`#${item.slug}`} data-toc-link>{item.text}</a>
+              </li>
+            ))}
+        </ul>
+      </div>
     </aside>
   </div>
 
@@ -83,3 +95,161 @@ const { collection, title, description, date, updated, headings, prev, next } = 
 
   <Comments />
 </article>
+
+<script is:inline>
+  (() => {
+    const article = document.querySelector(".article-wrapper");
+    if (!article) return;
+
+    const tocCard = article.querySelector("[data-toc-card]");
+    const tocScroll = tocCard?.querySelector("[data-toc-scroll]");
+    const upBtn = tocCard?.querySelector("[data-toc-up]");
+    const downBtn = tocCard?.querySelector("[data-toc-down]");
+    const tocLinks = [...article.querySelectorAll("[data-toc-link]")];
+    let activeSlug = "";
+
+    const syncTocButtons = () => {
+      if (!tocScroll || !upBtn || !downBtn) return;
+      const canScroll = tocScroll.scrollHeight > tocScroll.clientHeight + 1;
+      const atTop = tocScroll.scrollTop <= 2;
+      const atBottom =
+        tocScroll.scrollTop + tocScroll.clientHeight >=
+        tocScroll.scrollHeight - 2;
+
+      upBtn.disabled = !canScroll || atTop;
+      downBtn.disabled = !canScroll || atBottom;
+      upBtn.classList.toggle("is-disabled", upBtn.disabled);
+      downBtn.classList.toggle("is-disabled", downBtn.disabled);
+    };
+
+    const scrollStep = () =>
+      Math.max((tocScroll?.clientHeight ?? 180) * 0.56, 140);
+
+    upBtn?.addEventListener("click", () => {
+      if (!tocScroll) return;
+      tocScroll.scrollBy({ top: -scrollStep(), behavior: "smooth" });
+    });
+
+    downBtn?.addEventListener("click", () => {
+      if (!tocScroll) return;
+      tocScroll.scrollBy({ top: scrollStep(), behavior: "smooth" });
+    });
+
+    tocScroll?.addEventListener("scroll", syncTocButtons, { passive: true });
+    syncTocButtons();
+
+    const headingTargets = tocLinks
+      .map((link) => {
+        const href = link.getAttribute("href");
+        if (!href?.startsWith("#")) return null;
+        const slug = decodeURIComponent(href.slice(1));
+        const node = document.getElementById(slug);
+        return node ? { slug, link, node } : null;
+      })
+      .filter(Boolean);
+
+    const setActiveTocLink = (slug) => {
+      if (!slug || slug === activeSlug) return;
+      activeSlug = slug;
+      tocLinks.forEach((link) => {
+        const href = link.getAttribute("href");
+        const isActive = href === `#${slug}`;
+        link.classList.toggle("is-active", isActive);
+        if (isActive) {
+          link.setAttribute("aria-current", "true");
+          if (tocScroll) {
+            const nextTop = Math.max(
+              0,
+              link.offsetTop - tocScroll.clientHeight * 0.34
+            );
+            tocScroll.scrollTo({ top: nextTop, behavior: "smooth" });
+          }
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+    };
+
+    const updateActiveHeading = () => {
+      if (!headingTargets.length) return;
+      const offset = window.scrollY + 150;
+      let current = headingTargets[0];
+      for (const item of headingTargets) {
+        if (item.node.offsetTop <= offset) {
+          current = item;
+        } else {
+          break;
+        }
+      }
+      setActiveTocLink(current.slug);
+    };
+
+    window.addEventListener("scroll", updateActiveHeading, { passive: true });
+    window.addEventListener("resize", () => {
+      updateActiveHeading();
+      syncTocButtons();
+    });
+    updateActiveHeading();
+
+    const revealNodes = [...article.querySelectorAll(".article-content > *")].filter(
+      (node) => node.tagName !== "SCRIPT"
+    );
+    revealNodes.forEach((node, index) => {
+      node.classList.add("reveal-item");
+      node.style.setProperty("--reveal-delay", `${Math.min(index * 32, 420)}ms`);
+    });
+
+    if ("IntersectionObserver" in window) {
+      const revealObserver = new IntersectionObserver(
+        (entries, observer) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          });
+        },
+        {
+          rootMargin: "0px 0px -8% 0px",
+          threshold: 0.08
+        }
+      );
+      revealNodes.forEach((node) => revealObserver.observe(node));
+    } else {
+      revealNodes.forEach((node) => node.classList.add("is-visible"));
+    }
+
+    const markdownImages = [...article.querySelectorAll(".article-content img")];
+    markdownImages.forEach((img) => {
+      img.classList.add("md-image");
+      if (!img.getAttribute("loading")) {
+        img.setAttribute("loading", "lazy");
+      }
+      img.setAttribute("decoding", "async");
+
+      const parent = img.parentElement;
+      const isStandaloneParagraph =
+        parent &&
+        parent.tagName === "P" &&
+        parent.childElementCount === 1 &&
+        parent.textContent?.trim() === "";
+
+      if (!isStandaloneParagraph || parent.classList.contains("md-image-host")) {
+        return;
+      }
+
+      const figure = document.createElement("figure");
+      figure.className = "md-figure";
+      parent.classList.add("md-image-host");
+      parent.replaceWith(figure);
+      figure.appendChild(img);
+
+      const alt = (img.getAttribute("alt") || "").trim();
+      if (!alt || /^image\\s*\\d*$/i.test(alt)) {
+        return;
+      }
+      const caption = document.createElement("figcaption");
+      caption.textContent = alt;
+      figure.appendChild(caption);
+    });
+  })();
+</script>
