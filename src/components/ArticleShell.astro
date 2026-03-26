@@ -3,6 +3,7 @@ import Comments from "@/components/Comments.astro";
 import { collectionMeta } from "@/config/site";
 import type { BlogCollection } from "@/utils/content";
 import { formatDateLong } from "@/utils/date";
+import { withBase } from "@/utils/url";
 
 interface NeighborPost {
   title: string;
@@ -76,7 +77,7 @@ const { collection, title, description, date, updated, headings, prev, next } = 
 
   <nav class="article-pagination">
     {prev ? (
-      <a class="card pager-card" href={prev.permalink}>
+      <a class="card pager-card" href={withBase(prev.permalink)}>
         <small>上一篇</small>
         <strong>{prev.title}</strong>
       </a>
@@ -84,7 +85,7 @@ const { collection, title, description, date, updated, headings, prev, next } = 
       <div class="card pager-card pager-card--empty">没有上一篇了</div>
     )}
     {next ? (
-      <a class="card pager-card" href={next.permalink}>
+      <a class="card pager-card" href={withBase(next.permalink)}>
         <small>下一篇</small>
         <strong>{next.title}</strong>
       </a>
@@ -142,30 +143,12 @@ const { collection, title, description, date, updated, headings, prev, next } = 
       tocScroll.scrollBy({ top: scrollStep(), behavior: "smooth" });
     });
 
-    tocScroll?.addEventListener(
-      "wheel",
-      (event) => {
-        if (!tocScroll) return;
-        markManualTocInteraction();
-
-        const canScroll = tocScroll.scrollHeight > tocScroll.clientHeight + 1;
-        if (!canScroll) return;
-
-        const delta = event.deltaY;
-        const atTop = tocScroll.scrollTop <= 0;
-        const atBottom =
-          tocScroll.scrollTop + tocScroll.clientHeight >=
-          tocScroll.scrollHeight - 1;
-
-        const shouldContain =
-          (delta < 0 && !atTop) || (delta > 0 && !atBottom);
-        if (!shouldContain) return;
-
-        event.preventDefault();
-        tocScroll.scrollTop += delta;
-      },
-      { passive: false }
-    );
+    tocScroll?.addEventListener("wheel", markManualTocInteraction, {
+      passive: true
+    });
+    tocScroll?.addEventListener("pointerdown", markManualTocInteraction, {
+      passive: true
+    });
     tocScroll?.addEventListener("touchstart", markManualTocInteraction, {
       passive: true
     });
@@ -190,25 +173,19 @@ const { collection, title, description, date, updated, headings, prev, next } = 
       const bottomPadding = 10;
 
       if (linkRect.top < scrollRect.top + topPadding) {
-        tocScroll.scrollBy({
-          top: linkRect.top - (scrollRect.top + topPadding),
-          behavior: "smooth"
-        });
+        tocScroll.scrollTop += linkRect.top - (scrollRect.top + topPadding);
         return;
       }
 
       if (linkRect.bottom > scrollRect.bottom - bottomPadding) {
-        tocScroll.scrollBy({
-          top: linkRect.bottom - (scrollRect.bottom - bottomPadding),
-          behavior: "smooth"
-        });
+        tocScroll.scrollTop += linkRect.bottom - (scrollRect.bottom - bottomPadding);
       }
     };
 
     const setActiveTocLink = (slug) => {
       if (!slug || slug === activeSlug) return;
       activeSlug = slug;
-      const shouldAutoScrollToc = Date.now() - manualTocInteractionAt > 420;
+      const shouldAutoScrollToc = Date.now() - manualTocInteractionAt > 900;
       tocLinks.forEach((link) => {
         const href = link.getAttribute("href");
         const isActive = href === `#${slug}`;
@@ -237,7 +214,16 @@ const { collection, title, description, date, updated, headings, prev, next } = 
       setActiveTocLink(current.slug);
     };
 
-    window.addEventListener("scroll", updateActiveHeading, { passive: true });
+    let headingUpdateRaf = 0;
+    const onWindowScroll = () => {
+      if (headingUpdateRaf) return;
+      headingUpdateRaf = window.requestAnimationFrame(() => {
+        headingUpdateRaf = 0;
+        updateActiveHeading();
+      });
+    };
+
+    window.addEventListener("scroll", onWindowScroll, { passive: true });
     window.addEventListener("resize", () => {
       updateActiveHeading();
       syncTocButtons();

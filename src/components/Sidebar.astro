@@ -1,6 +1,7 @@
 ﻿---
 import NeteaseRandomTrack from "@/components/NeteaseRandomTrack.astro";
 import { collectionMeta, siteConfig, socialLinks } from "@/config/site";
+import { withBase } from "@/utils/url";
 import { getSidebarData } from "@/utils/content";
 import { formatDate } from "@/utils/date";
 
@@ -11,7 +12,7 @@ const { recentPosts, categories } = await getSidebarData();
   <section class="card profile-card">
     <img
       class="profile-avatar"
-      src="/images/avatar.jpg"
+      src={withBase("/images/avatar.jpg")}
       alt="yomo40 avatar"
       width="260"
       height="260"
@@ -33,7 +34,7 @@ const { recentPosts, categories } = await getSidebarData();
     <ul class="term-list">
       {Object.entries(collectionMeta).map(([key, meta]) => (
         <li>
-          <a href={`/${key}/`}>{meta.label}</a>
+          <a href={withBase(`/${key}/`)}>{meta.label}</a>
         </li>
       ))}
     </ul>
@@ -46,7 +47,7 @@ const { recentPosts, categories } = await getSidebarData();
         <ul class="term-list">
           {categories.map((item) => (
             <li>
-              <a href={`/categories/${item.slug}/`}>{item.name}</a>
+              <a href={withBase(`/categories/${item.slug}/`)}>{item.name}</a>
               <span>{item.count}</span>
             </li>
           ))}
@@ -72,7 +73,7 @@ const { recentPosts, categories } = await getSidebarData();
         <ul class="recent-list">
           {recentPosts.map((post) => (
             <li>
-              <a href={post.permalink}>{post.entry.data.title}</a>
+              <a href={withBase(post.permalink)}>{post.entry.data.title}</a>
               <time datetime={post.entry.data.date.toISOString()}>
                 {formatDate(post.entry.data.date)}
               </time>

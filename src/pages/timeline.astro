@@ -3,6 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { collectionMeta } from "@/config/site";
 import { getAllPosts } from "@/utils/content";
 import { formatDate } from "@/utils/date";
+import { withBase } from "@/utils/url";
 
 const posts = await getAllPosts();
 const groups = posts.reduce(
@@ -42,7 +43,7 @@ const orderedYears = Array.from(groups.keys()).sort((a, b) => Number(b) - Number
                   {formatDate(post.entry.data.date)}
                 </time>
                 <span>{collectionMeta[post.collection].label}</span>
-                <a href={post.permalink}>{post.entry.data.title}</a>
+                <a href={withBase(post.permalink)}>{post.entry.data.title}</a>
               </li>
             ))}
           </ul>

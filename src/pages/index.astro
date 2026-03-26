@@ -4,6 +4,7 @@ import PostCard from "@/components/PostCard.astro";
 import GitHubPulse from "@/components/GitHubPulse.astro";
 import { siteConfig } from "@/config/site";
 import { getAllPosts } from "@/utils/content";
+import { withBase } from "@/utils/url";
 
 const latest = await getAllPosts();
 ---
@@ -35,7 +36,7 @@ const latest = await getAllPosts();
   <section class="stack-section">
     <div class="section-head">
       <h2>最近更新</h2>
-      <a href="/timeline/">查看时间线</a>
+      <a href={withBase("/timeline/")}>查看时间线</a>
     </div>
     {
       latest.length ? (

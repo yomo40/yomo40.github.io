@@ -1,13 +1,16 @@
 ﻿---
 import ThemeToggle from "@/components/ThemeToggle.astro";
 import { navLinks } from "@/config/site";
+import { withBase } from "@/utils/url";
 
 const baseUrl = import.meta.env.BASE_URL;
 const rawPath = Astro.url.pathname;
 let pathname = rawPath;
+const normalizedBase =
+  baseUrl.endsWith("/") && baseUrl !== "/" ? baseUrl.slice(0, -1) : baseUrl;
 
-if (baseUrl !== "/" && rawPath.startsWith(baseUrl)) {
-  pathname = rawPath.slice(baseUrl.length - 1);
+if (normalizedBase !== "/" && rawPath.startsWith(normalizedBase)) {
+  pathname = rawPath.slice(normalizedBase.length);
 }
 
 if (!pathname.startsWith("/")) {
@@ -24,11 +27,14 @@ function isActive(href: string) {
   }
   return pathname.startsWith(href);
 }
+
+const brandHref = withBase("/");
+const rssHref = withBase("/rss.xml");
 ---
 
 <header class="top-shell">
   <div class="nav-card">
-    <a class="brand" href="/">
+    <a class="brand" href={brandHref}>
       <span class="brand-dot"></span>
       <span class="brand-text">yomo40のblog</span>
     </a>
@@ -36,7 +42,7 @@ function isActive(href: string) {
     <nav class="main-nav" aria-label="主导航">
       {navLinks.map((item) => (
         <a
-          href={item.href}
+          href={withBase(item.href)}
           aria-current={isActive(item.href) ? "page" : undefined}
         >
           {item.label}
@@ -45,7 +51,7 @@ function isActive(href: string) {
     </nav>
 
     <div class="nav-tools">
-      <a href="/rss.xml" class="tool-link" aria-label="RSS 订阅">
+      <a href={rssHref} class="tool-link" aria-label="RSS 订阅">
         RSS
       </a>
       <ThemeToggle />

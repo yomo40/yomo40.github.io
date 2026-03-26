@@ -2,6 +2,7 @@
 import { collectionMeta } from "@/config/site";
 import type { PostItem } from "@/utils/content";
 import { formatDate } from "@/utils/date";
+import { withBase } from "@/utils/url";
 
 interface Props {
   post: PostItem;
@@ -20,7 +21,7 @@ const meta = collectionMeta[post.collection];
     </time>
   </div>
   <h2>
-    <a href={post.permalink}>{post.entry.data.title}</a>
+    <a href={withBase(post.permalink)}>{post.entry.data.title}</a>
   </h2>
   <p>{post.entry.data.description}</p>
 </article>

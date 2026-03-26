@@ -1,6 +1,7 @@
 ﻿---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getCategoryIndex } from "@/utils/content";
+import { withBase } from "@/utils/url";
 
 const categories = await getCategoryIndex();
 ---
@@ -15,7 +16,7 @@ const categories = await getCategoryIndex();
     <ul class="term-list term-list--grid">
       {categories.map((item) => (
         <li>
-          <a href={`/categories/${item.slug}/`}>{item.name}</a>
+          <a href={withBase(`/categories/${item.slug}/`)}>{item.name}</a>
           <span>{item.count}</span>
         </li>
       ))}

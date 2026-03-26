@@ -40,6 +40,20 @@ export const collectionMeta = {
   },
 } as const;
 
+const giscusDefaults = {
+  repo: "yomo40/yomo40.github.io",
+  repoId: "R_kgDORNlrYg",
+  category: "Announcements",
+  categoryId: "DIC_kwDORNlrYs4C5T-w",
+  mapping: "pathname",
+  strict: "1",
+  reactionsEnabled: "1",
+  emitMetadata: "0",
+  inputPosition: "top",
+  theme: "preferred_color_scheme",
+  lang: "zh-CN",
+} as const;
+
 const normalizeEnvValue = (value: unknown): string => {
   if (typeof value !== "string") {
     return "";
@@ -77,22 +91,30 @@ const readEnv = (...keys: string[]): string => {
 };
 
 export const giscusConfig = {
-  repo: readEnv("PUBLIC_GISCUS_REPO", "GISCUS_REPO"),
-  repoId: readEnv("PUBLIC_GISCUS_REPO_ID", "GISCUS_REPO_ID"),
-  category: readEnv("PUBLIC_GISCUS_CATEGORY", "GISCUS_CATEGORY") || "General",
-  categoryId: readEnv("PUBLIC_GISCUS_CATEGORY_ID", "GISCUS_CATEGORY_ID"),
-  mapping: readEnv("PUBLIC_GISCUS_MAPPING", "GISCUS_MAPPING") || "pathname",
-  strict: readEnv("PUBLIC_GISCUS_STRICT", "GISCUS_STRICT") || "0",
+  repo: readEnv("PUBLIC_GISCUS_REPO", "GISCUS_REPO") || giscusDefaults.repo,
+  repoId:
+    readEnv("PUBLIC_GISCUS_REPO_ID", "GISCUS_REPO_ID") || giscusDefaults.repoId,
+  category:
+    readEnv("PUBLIC_GISCUS_CATEGORY", "GISCUS_CATEGORY") ||
+    giscusDefaults.category,
+  categoryId:
+    readEnv("PUBLIC_GISCUS_CATEGORY_ID", "GISCUS_CATEGORY_ID") ||
+    giscusDefaults.categoryId,
+  mapping:
+    readEnv("PUBLIC_GISCUS_MAPPING", "GISCUS_MAPPING") || giscusDefaults.mapping,
+  strict: readEnv("PUBLIC_GISCUS_STRICT", "GISCUS_STRICT") || giscusDefaults.strict,
   reactionsEnabled:
     readEnv("PUBLIC_GISCUS_REACTIONS_ENABLED", "GISCUS_REACTIONS_ENABLED") ||
-    "1",
+    giscusDefaults.reactionsEnabled,
   emitMetadata:
-    readEnv("PUBLIC_GISCUS_EMIT_METADATA", "GISCUS_EMIT_METADATA") || "0",
+    readEnv("PUBLIC_GISCUS_EMIT_METADATA", "GISCUS_EMIT_METADATA") ||
+    giscusDefaults.emitMetadata,
   inputPosition:
-    readEnv("PUBLIC_GISCUS_INPUT_POSITION", "GISCUS_INPUT_POSITION") || "top",
+    readEnv("PUBLIC_GISCUS_INPUT_POSITION", "GISCUS_INPUT_POSITION") ||
+    giscusDefaults.inputPosition,
   theme:
-    readEnv("PUBLIC_GISCUS_THEME", "GISCUS_THEME") || "preferred_color_scheme",
-  lang: readEnv("PUBLIC_GISCUS_LANG", "GISCUS_LANG") || "zh-CN",
+    readEnv("PUBLIC_GISCUS_THEME", "GISCUS_THEME") || giscusDefaults.theme,
+  lang: readEnv("PUBLIC_GISCUS_LANG", "GISCUS_LANG") || giscusDefaults.lang,
 };
 
 const requiredGiscusFields: Array<{

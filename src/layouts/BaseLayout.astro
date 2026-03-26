@@ -3,6 +3,7 @@ import Footer from "@/components/Footer.astro";
 import Header from "@/components/Header.astro";
 import Sidebar from "@/components/Sidebar.astro";
 import { siteConfig } from "@/config/site";
+import { withBase } from "@/utils/url";
 import "@/styles/base.css";
 import "@/styles/prose.css";
 
@@ -26,6 +27,9 @@ const {
 
 const pageTitle = title ? `${title} | ${siteConfig.title}` : siteConfig.title;
 const baseUrl = import.meta.env.BASE_URL;
+const faviconHref = withBase("/pn.png");
+const bannerBgUrl = withBase("/images/banner-bg.jpg");
+const bannerBackgroundStyle = `--site-banner-image: url("${bannerBgUrl}")`;
 ---
 
 <!doctype html>
@@ -36,7 +40,7 @@ const baseUrl = import.meta.env.BASE_URL;
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
-    <link rel="icon" type="image/png" href="/pn.png" />
+    <link rel="icon" type="image/png" href={faviconHref} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -63,19 +67,44 @@ const baseUrl = import.meta.env.BASE_URL;
           ? baseUrl.slice(0, -1)
           : baseUrl;
 
+        const withBase = (value) => {
+          if (!value || !value.startsWith("/") || value.startsWith("//")) {
+            return value;
+          }
+          if (value.startsWith(normalizedBase + "/") || value === normalizedBase) {
+            return value;
+          }
+          return normalizedBase + value;
+        };
+
         document.addEventListener("DOMContentLoaded", () => {
           document.querySelectorAll("a[href^='/']").forEach((anchor) => {
             const href = anchor.getAttribute("href");
             if (!href) return;
-            if (href.startsWith("//")) return;
-            if (href.startsWith(normalizedBase + "/")) return;
-            anchor.setAttribute("href", normalizedBase + href);
+            anchor.setAttribute("href", withBase(href));
           });
+
+          document.querySelectorAll("img[src^='/']").forEach((image) => {
+            const src = image.getAttribute("src");
+            if (!src) return;
+            image.setAttribute("src", withBase(src));
+          });
+
+          document
+            .querySelectorAll("link[rel='icon'][href^='/']")
+            .forEach((iconLink) => {
+              const href = iconLink.getAttribute("href");
+              if (!href) return;
+              iconLink.setAttribute("href", withBase(href));
+            });
         });
       })();
     </script>
   </head>
-  <body class={`page-enter ${pageClass}`.trim()}>
+  <body
+    class={`page-enter ${pageClass}`.trim()}
+    style={bannerBackgroundStyle}
+  >
     <div class="banner-layer" aria-hidden="true"></div>
     <Header />
 

@@ -14,9 +14,7 @@ body {
 
 body {
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, rgba(231, 236, 242, 0.68), rgba(231, 236, 242, 0.82)),
-    url("/images/banner-bg.jpg") center center / cover no-repeat;
+  position: relative;
   background-color: var(--page-bg);
   color: var(--text);
   font-family: "Noto Sans SC", "Segoe UI", sans-serif;
@@ -24,11 +22,9 @@ body {
   transition: background-color 0.35s ease, color 0.35s ease;
 }
 
-[data-theme="dark"] body {
-  background:
-    linear-gradient(180deg, rgba(8, 19, 31, 0.72), rgba(8, 19, 31, 0.88)),
-    url("/images/banner-bg.jpg") center center / cover no-repeat;
-  background-color: var(--page-bg);
+body > *:not(.banner-layer) {
+  position: relative;
+  z-index: 1;
 }
 
 html.theme-animating *,
@@ -121,11 +117,20 @@ img {
 }
 
 .banner-layer {
-  display: none;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(231, 236, 242, 0.68), rgba(231, 236, 242, 0.82)),
+    var(--site-banner-image, none) center center / cover no-repeat;
+  transform: translateZ(0);
 }
 
-.banner-layer::after {
-  display: none;
+[data-theme="dark"] .banner-layer {
+  background:
+    linear-gradient(180deg, rgba(8, 19, 31, 0.72), rgba(8, 19, 31, 0.88)),
+    var(--site-banner-image, none) center center / cover no-repeat;
 }
 
 .top-shell {
