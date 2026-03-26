@@ -11,7 +11,7 @@
   neteasePlaylistUrl: "https://music.163.com/playlist?id=889043208",
   siteUrl: "https://yomo40.github.io",
   heroTitle: "这里是yomo40,一个普普通通的废柴",
-  heroSubtitle: "最喜欢妖梦了"
+  heroSubtitle: "最喜欢妖梦了",
 };
 
 export const navLinks = [
@@ -20,7 +20,7 @@ export const navLinks = [
   { href: "/timeline/", label: "时间线" },
   { href: "/categories/", label: "分类" },
   { href: "/search/", label: "搜索" },
-  { href: "/about/", label: "关于" }
+  { href: "/about/", label: "关于" },
 ];
 
 export const socialLinks = [
@@ -28,39 +28,16 @@ export const socialLinks = [
   { href: "mailto:3372185839@qq.com", label: "QQ Mail" },
   {
     href: "tencent://message/?uin=3372185839&Site=&Menu=yes",
-    label: "QQ Chat"
+    label: "QQ Chat",
   },
-  { href: "mailto:yomo407325@gmail.com", label: "Gmail" }
+  { href: "mailto:yomo407325@gmail.com", label: "Gmail" },
 ];
 
 export const collectionMeta = {
   blog: {
     label: "博客",
-    description: "心理历程、个人思考和笔记总结统一收录在这里。"
-  }
-} as const;
-
-export const acgProfile = {
-  watchlist: [
-    {
-      title: "《魔法使的新娘》S2",
-      note: "补番中，重点关注角色成长线。"
-    },
-    {
-      title: "《BanG Dream! It's MyGO!!!!!》",
-      note: "重看中，记录群像叙事与镜头节奏。"
-    },
-    {
-      title: "《葬送的芙莉莲》",
-      note: "慢节奏复盘，提取“时间感”写作灵感。"
-    }
-  ],
-  keywords: ["群像叙事", "成长痛感", "留白", "章节回环", "反高潮"],
-  soundtrack: [
-    "春日影 (MyGO!!!!!)",
-    "勇者 (YOASOBI)",
-    "光るなら (Goose house)"
-  ]
+    description: "一些writeup与琐事",
+  },
 } as const;
 
 const normalizeEnvValue = (value: unknown): string => {
@@ -102,8 +79,7 @@ const readEnv = (...keys: string[]): string => {
 export const giscusConfig = {
   repo: readEnv("PUBLIC_GISCUS_REPO", "GISCUS_REPO"),
   repoId: readEnv("PUBLIC_GISCUS_REPO_ID", "GISCUS_REPO_ID"),
-  category:
-    readEnv("PUBLIC_GISCUS_CATEGORY", "GISCUS_CATEGORY") || "General",
+  category: readEnv("PUBLIC_GISCUS_CATEGORY", "GISCUS_CATEGORY") || "General",
   categoryId: readEnv("PUBLIC_GISCUS_CATEGORY_ID", "GISCUS_CATEGORY_ID"),
   mapping: readEnv("PUBLIC_GISCUS_MAPPING", "GISCUS_MAPPING") || "pathname",
   strict: readEnv("PUBLIC_GISCUS_STRICT", "GISCUS_STRICT") || "0",
@@ -115,9 +91,8 @@ export const giscusConfig = {
   inputPosition:
     readEnv("PUBLIC_GISCUS_INPUT_POSITION", "GISCUS_INPUT_POSITION") || "top",
   theme:
-    readEnv("PUBLIC_GISCUS_THEME", "GISCUS_THEME") ||
-    "preferred_color_scheme",
-  lang: readEnv("PUBLIC_GISCUS_LANG", "GISCUS_LANG") || "zh-CN"
+    readEnv("PUBLIC_GISCUS_THEME", "GISCUS_THEME") || "preferred_color_scheme",
+  lang: readEnv("PUBLIC_GISCUS_LANG", "GISCUS_LANG") || "zh-CN",
 };
 
 const requiredGiscusFields: Array<{
@@ -130,7 +105,7 @@ const requiredGiscusFields: Array<{
   { field: "repo", env: "PUBLIC_GISCUS_REPO" },
   { field: "repoId", env: "PUBLIC_GISCUS_REPO_ID" },
   { field: "category", env: "PUBLIC_GISCUS_CATEGORY" },
-  { field: "categoryId", env: "PUBLIC_GISCUS_CATEGORY_ID" }
+  { field: "categoryId", env: "PUBLIC_GISCUS_CATEGORY_ID" },
 ];
 
 export const giscusMissingFields = requiredGiscusFields
