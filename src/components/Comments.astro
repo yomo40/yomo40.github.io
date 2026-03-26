@@ -1,4 +1,4 @@
-﻿---
+---
 import { commentsEnabled, giscusConfig } from "@/config/site";
 ---
 
@@ -9,7 +9,29 @@ import { commentsEnabled, giscusConfig } from "@/config/site";
       <div id="giscus"></div>
       <script is:inline define:vars={{ giscusConfig }}>
         const container = document.getElementById("giscus");
-        if (container && !container.hasChildNodes()) {
+        if (!container || container.hasChildNodes()) {
+          return;
+        }
+
+        const getCurrentTheme = () => {
+          const theme = document.documentElement.getAttribute("data-theme");
+          return theme === "dark" ? "dark" : "light";
+        };
+
+        const applyGiscusTheme = () => {
+          const frame = document.querySelector("iframe.giscus-frame");
+          if (!frame) return;
+          frame.contentWindow?.postMessage(
+            {
+              giscus: {
+                setConfig: { theme: getCurrentTheme() }
+              }
+            },
+            "https://giscus.app"
+          );
+        };
+
+        const mountGiscus = () => {
           const script = document.createElement("script");
           script.src = "https://giscus.app/client.js";
           script.async = true;
@@ -26,9 +48,35 @@ import { commentsEnabled, giscusConfig } from "@/config/site";
           );
           script.setAttribute("data-emit-metadata", giscusConfig.emitMetadata);
           script.setAttribute("data-input-position", giscusConfig.inputPosition);
-          script.setAttribute("data-theme", giscusConfig.theme);
+          script.setAttribute("data-theme", getCurrentTheme());
           script.setAttribute("data-lang", giscusConfig.lang);
+          script.setAttribute("data-loading", "lazy");
           container.append(script);
+        };
+
+        const onThemeChange = () => {
+          window.setTimeout(applyGiscusTheme, 60);
+        };
+
+        window.addEventListener("themechange", onThemeChange);
+        const observer = new MutationObserver(onThemeChange);
+        observer.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ["data-theme"]
+        });
+
+        if ("IntersectionObserver" in window) {
+          const lazyObserver = new IntersectionObserver(
+            (entries) => {
+              if (!entries.some((entry) => entry.isIntersecting)) return;
+              mountGiscus();
+              lazyObserver.disconnect();
+            },
+            { rootMargin: "220px 0px" }
+          );
+          lazyObserver.observe(container);
+        } else {
+          mountGiscus();
         }
       </script>
     </section>
@@ -36,6 +84,10 @@ import { commentsEnabled, giscusConfig } from "@/config/site";
     <section class="card comments-card comments-card--disabled">
       <h2>评论</h2>
       <p>尚未配置 Giscus。设置 `PUBLIC_GISCUS_*` 环境变量后会自动启用。</p>
+      <p class="comments-card__hint">
+        需要至少配置：`PUBLIC_GISCUS_REPO`、`PUBLIC_GISCUS_REPO_ID`、
+        `PUBLIC_GISCUS_CATEGORY`、`PUBLIC_GISCUS_CATEGORY_ID`。
+      </p>
     </section>
   )
 }

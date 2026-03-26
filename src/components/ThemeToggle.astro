@@ -11,6 +11,11 @@
   function setTheme(theme) {
     root.setAttribute("data-theme", theme);
     localStorage.setItem(key, theme);
+    window.dispatchEvent(
+      new CustomEvent("themechange", {
+        detail: { theme }
+      })
+    );
   }
 
   function applyTheme(theme) {
