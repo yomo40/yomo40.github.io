@@ -2,7 +2,7 @@
 import Footer from "@/components/Footer.astro";
 import Header from "@/components/Header.astro";
 import Sidebar from "@/components/Sidebar.astro";
-import { siteConfig } from "@/config/site";
+import { searchConfig, siteConfig } from "@/config/site";
 import { withBase } from "@/utils/url";
 import "@/styles/base.css";
 import "@/styles/prose.css";
@@ -30,6 +30,8 @@ const baseUrl = import.meta.env.BASE_URL;
 const faviconHref = withBase("/pn.png");
 const bannerBgUrl = withBase("/images/banner-bg.jpg");
 const bannerBackgroundStyle = `--site-banner-image: url("${bannerBgUrl}")`;
+const pagefindHighlightScriptSrc = withBase("/pagefind/pagefind-highlight.js");
+const searchHighlightParam = searchConfig.highlightParam;
 ---
 
 <!doctype html>
@@ -138,6 +140,64 @@ const bannerBackgroundStyle = `--site-banner-image: url("${bannerBgUrl}")`;
         } else {
           mount();
         }
+      })();
+    </script>
+    <script
+      is:inline
+      define:vars={{ pagefindHighlightScriptSrc, searchHighlightParam }}
+    >
+      (() => {
+        const query = new URLSearchParams(window.location.search);
+        if (!query.has(searchHighlightParam)) return;
+
+        const loadPagefindHighlight = () =>
+          new Promise((resolve, reject) => {
+            if (window.PagefindHighlight) {
+              resolve(window.PagefindHighlight);
+              return;
+            }
+
+            const existing = document.querySelector(
+              "script[data-pagefind-highlight='true']"
+            );
+            if (existing) {
+              existing.addEventListener(
+                "load",
+                () => resolve(window.PagefindHighlight),
+                { once: true }
+              );
+              existing.addEventListener(
+                "error",
+                () => reject(new Error("Pagefind highlight script load failed")),
+                { once: true }
+              );
+              return;
+            }
+
+            const script = document.createElement("script");
+            script.src = pagefindHighlightScriptSrc;
+            script.async = true;
+            script.dataset.pagefindHighlight = "true";
+            script.onload = () => resolve(window.PagefindHighlight);
+            script.onerror = () =>
+              reject(
+                new Error(
+                  `Failed to load highlight script: ${pagefindHighlightScriptSrc}`
+                )
+              );
+            document.head.appendChild(script);
+          });
+
+        loadPagefindHighlight()
+          .then((PagefindHighlight) => {
+            if (!PagefindHighlight) return;
+            new PagefindHighlight({
+              highlightParam: searchHighlightParam
+            });
+          })
+          .catch((error) => {
+            console.error("[pagefind] highlight bootstrap failed:", error);
+          });
       })();
     </script>
   </body>

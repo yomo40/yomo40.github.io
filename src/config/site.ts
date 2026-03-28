@@ -1,4 +1,4 @@
-﻿export const siteConfig = {
+export const siteConfig = {
   title: "yomo40 的博客",
   description: "一个普普通通的废柴",
   author: "yomo40",
@@ -38,6 +38,10 @@ export const collectionMeta = {
     label: "博客",
     description: "一些writeup与琐事",
   },
+} as const;
+
+export const searchConfig = {
+  highlightParam: "highlight",
 } as const;
 
 const giscusDefaults = {
