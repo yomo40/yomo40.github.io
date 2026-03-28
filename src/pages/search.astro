@@ -85,9 +85,11 @@ const isDev = import.meta.env.DEV;
         root.dataset.ready = "true";
       } catch (error) {
         console.error("[search] Pagefind initialization failed:", error);
-        root.innerHTML = isDev
-          ? "<p>开发模式下搜索索引默认不存在。请执行 <code>npm run build</code> 后再预览搜索结果。</p>"
-          : "<p>搜索索引加载失败，请刷新重试；若问题持续，请重新构建并部署站点。</p>";
+        root.setAttribute("role", "status");
+        root.setAttribute("aria-live", "polite");
+        root.textContent = isDev
+          ? "开发模式下搜索索引默认不存在。请执行 npm run build 后再预览搜索结果。"
+          : "搜索索引加载失败，请刷新重试；若问题持续，请重新构建并部署站点。";
       }
     }
 
